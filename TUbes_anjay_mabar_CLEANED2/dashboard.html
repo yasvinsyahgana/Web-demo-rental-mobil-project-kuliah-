@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Rent - Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    header h2 {
+      font-size: 1.5rem;
+    }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    /* Navbar */
+    .navbar {
+      background: white;
+      padding: 1rem 2rem;
+      display: flex;
+      gap: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+    }
+
+    .navbar button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .navbar button:hover, .navbar button.active {
+      background: #764ba2;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .section h3 {
+      color: #333;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 0.5rem;
+      display: inline-block;
+    }
+
+    /* Search Bar */
+    .search-bar {
+      margin-bottom: 2rem;
+    }
+
+    .search-bar input {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.8rem;
+      border: 2px solid #ddd;
+      border-radius: 25px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    /* Car Cards */
+    .car-list, .rented-car-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .car-card, .rented-car-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .car-card:hover, .rented-car-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .car-card img, .rented-car-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .car-card h4, .rented-car-card h4 {
+      color: #333;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .car-card p, .rented-car-card p {
+      color: #667eea;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .rented-car-card {
+      border: 2px solid #4CAF50;
+      background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+    }
+
+    .rented-car-card::before {
+      content: "✓ DISEWA";
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #4CAF50;
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    /* Status badges */
+    .status-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: white;
+    }
+
+    .status-available {
+      background: #4CAF50;
+    }
+
+    .status-selected {
+      background: #FF9800;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 2rem;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close:hover {
+      color: #333;
+    }
+
+    .modal-content img {
+      width: 100%;
+      max-width: 300px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin: 1rem 0;
+    }
+
+    .modal-content input {
+      width: 100px;
+      padding: 0.5rem;
+      margin: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .modal-content button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .modal-content button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: #f8f9ff;
+    }
+
+    /* Rental Tools */
+    .rental-tools {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .rental-tools input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.8rem;
+      border: 2px solid #ddd;
+      border-radius: 25px;
+      font-size: 1rem;
+    }
+
+    .rental-tools button {
+      background: #ff4757;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .rental-tools button:hover {
+      background: #ff3838;
+      transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .navbar {
+        padding: 1rem;
+        justify-content: center;
+      }
+
+      .section {
+        padding: 1rem;
+      }
+
+      .car-list, .rented-car-list {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+      }
+
+      .rental-tools {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .rental-tools input {
+        min-width: unset;
+      }
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #666;
+    }
+
+    .empty-state h4 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+    }
+
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      z-index: 1001;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header>
+    <h2>Selamat Datang di Quick Rent</h2>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+  </header>
+
+  <!-- Navbar Navigasi -->
+  <nav class="navbar">
+    <button onclick="showSection('home')" class="nav-btn active">Beranda</button>
+    <button onclick="showSection('cars')" class="nav-btn">Lihat Mobil</button>
+    <button onclick="showSection('selected')" class="nav-btn">Mobil Dipilih</button>
+    <button onclick="showSection('rented')" class="nav-btn">Mobil Disewa</button>
+    <button onclick="showSection('history')" class="nav-btn">Riwayat</button>
+  </nav>
+
+  <!-- Beranda -->
+  <section id="home" class="section active">
+    <h3>Dashboard Quick Rent</h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;">
+        <h4 style="margin-bottom: 0.5rem;">Mobil Dipilih</h4>
+        <p style="font-size: 2rem; font-weight: bold;" id="selectedCount">0</p>
+      </div>
+      <div style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;">
+        <h4 style="margin-bottom: 0.5rem;">Mobil Disewa</h4>
+        <p style="font-size: 2rem; font-weight: bold;" id="rentedCount">0</p>
+      </div>
+      <div style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;">
+        <h4 style="margin-bottom: 0.5rem;">Total Penyewaan</h4>
+        <p style="font-size: 2rem; font-weight: bold;" id="totalRentals">0</p>
+      </div>
+    </div>
+
+    <h4 style="margin-bottom: 1rem; color: #333;">Aktivitas Terbaru</h4>
+    <div class="rented-car-list" id="recentActivity">
+      <!-- Aktivitas terbaru akan dimuat oleh JavaScript -->
+    </div>
+  </section>
+
+  <!-- Daftar Mobil Tersedia -->
+  <section id="cars" class="section">
+    <h3>Daftar Mobil yang Tersedia</h3>
+    <div class="search-bar">
+      <input type="text" id="carSearchInput" oninput="searchCars()" placeholder="Cari mobil...">
+    </div>
+    <div class="car-list" id="availableCarsList">
+      <!-- Mobil akan dimuat oleh JavaScript -->
+    </div>
+  </section>
+
+  <!-- Mobil yang Dipilih (Keranjang) -->
+  <section id="selected" class="section">
+    <h3>Mobil yang Dipilih</h3>
+    <p style="color: #666; margin-bottom: 1.5rem;">Mobil yang Anda pilih untuk disewa. Klik untuk melanjutkan proses penyewaan.</p>
+    <div class="car-list" id="selectedCarsList">
+      <!-- Mobil yang dipilih akan dimuat oleh JavaScript -->
+    </div>
+  </section>
+
+  <!-- Mobil yang Sudah Disewa -->
+  <section id="rented" class="section">
+    <h3>Mobil yang Sudah Disewa</h3>
+    <p style="color: #666; margin-bottom: 1.5rem;">Daftar mobil yang sedang dalam masa sewa aktif.</p>
+    <div class="rented-car-list" id="activeRentalsList">
+      <!-- Mobil yang disewa akan dimuat oleh JavaScript -->
+    </div>
+  </section>
+
+  <!-- Riwayat Penyewaan -->
+  <section id="history" class="section">
+    <h3>Riwayat Penyewaan</h3>
+    <div class="rental-tools">
+      <input type="text" id="searchInput" placeholder="Cari nama mobil..." oninput="filterHistory()">
+      <button onclick="clearHistory()">Hapus Semua Riwayat</button>
+    </div>
+    <div class="rental-history">
+      <table>
+        <thead>
+          <tr>
+            <th>Mobil</th>
+            <th>Tanggal Sewa</th>
+            <th>Durasi (hari)</th>
+            <th>Total Harga</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <tr>
+            <td colspan="5">Belum ada penyewaan.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Modal Detail Mobil -->
+  <div class="modal" id="carModal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h3 id="modalCarName"></h3>
+      <img id="modalCarImg" src="" alt="Mobil" />
+      <p><strong>Harga:</strong> <span id="modalCarPrice"></span></p>
+      <div style="margin: 1rem 0;">
+        <button onclick="selectCar()" style="background: #FF9800; margin-right: 1rem;">Pilih Mobil</button>
+        <button onclick="showRentForm()">Sewa Sekarang</button>
+      </div>
+      <div id="rentForm" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #eee;">
+        <label for="rentalDays">Durasi Sewa (hari):</label>
+        <input type="number" id="rentalDays" min="1" value="1">
+        <button onclick="rentCar()">Konfirmasi Sewa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Struk Sewa -->
+  <div class="modal" id="receiptModal">
+    <div class="modal-content">
+      <span class="close" onclick="closeReceipt()">&times;</span>
+      <h3>Struk Penyewaan</h3>
+      <p><strong>Mobil:</strong> <span id="receiptCar"></span></p>
+      <p><strong>Harga:</strong> <span id="receiptPrice"></span></p>
+      <p><strong>Tanggal Sewa:</strong> <span id="receiptDate"></span></p>
+      <p><strong>Durasi:</strong> <span id="receiptDays"></span> hari</p>
+      <p><strong>Total:</strong> <span id="receiptTotal"></span></p>
+      <button onclick="closeReceipt()">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div id="notification" class="notification"></div>
+
+  <script>
+    // Data mobil default
+    let cars = JSON.parse(localStorage.getItem('availableCars')) || [
+      { id: 1, name: "Fiat 500", price: "Rp300.000/hari", image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop" },
+      { id: 2, name: "Porsche Panamera Turbo ", price: "Rp250.000/hari", image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&h=250&fit=crop" },
+      { id: 3, name: "Chevrolet Camaro", price: "Rp450.000/hari", image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=250&fit=crop" },
+      { id: 4, name: "Range Rover", price: "Rp800.000/hari", image: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=400&h=250&fit=crop" },
+      { id: 5, name: "Hyundai I30", price: "Rp200.000/hari", image: "https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400&h=250&fit=crop" },
+      { id: 6, name: "Bugatti Chiron", price: "Rp280.000/hari", image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400&h=250&fit=crop" }
+    ];
+
+    // State management menggunakan memori (tidak localStorage)
+    let selectedCars = [];
+    let activeRentals = [];
+    let rentalHistory = [];
+    let currentUser = "user1"; // Simulasi user yang login
+
+    // Current selected car untuk modal
+    let currentSelectedCar = null;
+
+    // Fungsi untuk menampilkan notifikasi
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.background = type === 'success' ? '#4CAF50' : '#f44336';
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    // Fungsi untuk menampilkan detail mobil
+    function showDetails(carId) {
+      const car = cars.find(c => c.id === carId);
+      if (!car) return;
+
+      currentSelectedCar = car;
+      document.getElementById("modalCarName").textContent = car.name;
+      document.getElementById("modalCarPrice").textContent = car.price;
+      document.getElementById("modalCarImg").src = car.image;
+      document.getElementById("carModal").style.display = "flex";
+      document.getElementById("rentForm").style.display = "none";
+    }
+
+    // Fungsi untuk menutup modal
+    function closeModal() {
+      document.getElementById("carModal").style.display = "none";
+      document.getElementById("rentalDays").value = 1;
+    }
+
+    function closeReceipt() {
+      document.getElementById("receiptModal").style.display = "none";
+    }
+
+    // Fungsi untuk memilih mobil (menambah ke keranjang)
+    function selectCar() {
+      if (!currentSelectedCar) return;
+
+      // Cek apakah mobil sudah dipilih
+      const alreadySelected = selectedCars.find(car => car.id === currentSelectedCar.id);
+      if (alreadySelected) {
+        showNotification('Mobil sudah ada di daftar pilihan!', 'error');
+        return;
+      }
+
+      // Cek apakah mobil sedang disewa
+      const alreadyRented = activeRentals.find(rental => rental.car.id === currentSelectedCar.id);
+      if (alreadyRented) {
+        showNotification('Mobil sedang disewa!', 'error');
+        return;
+      }
+
+      selectedCars.push({ ...currentSelectedCar, selectedAt: new Date() });
+      showNotification(`${currentSelectedCar.name} berhasil ditambahkan ke pilihan!`);
+      updateDashboard();
+      closeModal();
+    }
+
+    // Fungsi untuk menampilkan form sewa
+    function showRentForm() {
+      if (!currentSelectedCar) return;
+
+      // Cek apakah mobil sedang disewa
+      const alreadyRented = activeRentals.find(rental => rental.car.id === currentSelectedCar.id);
+      if (alreadyRented) {
+        showNotification('Mobil sedang disewa!', 'error');
+        return;
+      }
+
+      document.getElementById("rentForm").style.display = "block";
+    }
+
+    // Fungsi untuk menyewa mobil
+    function rentCar() {
+      if (!currentSelectedCar) return;
+
+      const days = parseInt(document.getElementById("rentalDays").value);
+      if (isNaN(days) || days < 1) {
+        showNotification('Masukkan durasi sewa minimal 1 hari!', 'error');
+        return;
+      }
+
+      const pricePerDay = parseInt(currentSelectedCar.price.replace(/\D/g, ""));
+      const total = pricePerDay * days;
+      const totalFormatted = "Rp" + total.toLocaleString("id-ID");
+      const date = new Date();
+
+      const rental = {
+        id: Date.now(),
+        car: { ...currentSelectedCar },
+        startDate: date,
+        days: days,
+        total: totalFormatted,
+        status: 'active'
+      };
+
+      // Tambah ke rental aktif
+      activeRentals.push(rental);
+
+      // Tambah ke riwayat
+      rentalHistory.push({
+        ...rental,
+        rentedAt: date.toLocaleString('id-ID')
+      });
+
+      // Hapus dari daftar pilihan jika ada
+      selectedCars = selectedCars.filter(car => car.id !== currentSelectedCar.id);
+
+      // Tampilkan struk
+      document.getElementById("receiptCar").textContent = currentSelectedCar.name;
+      document.getElementById("receiptPrice").textContent = currentSelectedCar.price;
+      document.getElementById("receiptDate").textContent = date.toLocaleString('id-ID');
+      document.getElementById("receiptDays").textContent = days;
+      document.getElementById("receiptTotal").textContent = totalFormatted;
+
+      showNotification(`${currentSelectedCar.name} berhasil disewa!`);
+      updateDashboard();
+      closeModal();
+      document.getElementById("receiptModal").style.display = "flex";
+    }
+
+    // Fungsi untuk menghapus mobil dari pilihan
+    function removeFromSelected(carId) {
+      selectedCars = selectedCars.filter(car => car.id !== carId);
+      showNotification('Mobil dihapus dari pilihan');
+      updateDashboard();
+      renderSelectedCars();
+    }
+
+    // Fungsi untuk menyelesaikan sewa (return mobil)
+    function returnCar(rentalId) {
+      if (confirm('Yakin ingin menyelesaikan penyewaan mobil ini?')) {
+        activeRentals = activeRentals.filter(rental => rental.id !== rentalId);
+        showNotification('Mobil berhasil dikembalikan!');
+        updateDashboard();
+        renderActiveRentals();
+      }
+    }
+
+    // Fungsi untuk render daftar mobil tersedia
+    function renderAvailableCars(carsToRender = cars) {
+      const container = document.getElementById("availableCarsList");
+      container.innerHTML = "";
+
+      if (carsToRender.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h4>Tidak ada mobil ditemukan</h4><p>Coba kata kunci lain</p></div>';
+        return;
+      }
+
+      carsToRender.forEach(car => {
+        const isRented = activeRentals.find(rental => rental.car.id === car.id);
+        const isSelected = selectedCars.find(selected => selected.id === car.id);
+        
+        const card = document.createElement("div");
+        card.className = "car-card";
+        card.onclick = () => showDetails(car.id);
+        
+        let statusBadge = '';
+        if (isRented) {
+          statusBadge = '<div class="status-badge" style="background: #f44336;">SEDANG DISEWA</div>';
+        } else if (isSelected) {
+          statusBadge = '<div class="status-badge status-selected">DIPILIH</div>';
+        } else {
+          statusBadge = '<div class="status-badge status-available">TERSEDIA</div>';
+        }
+        
+        card.innerHTML = `
+          ${statusBadge}
+          <img src="${car.image}" alt="${car.name}">
+          <h4>${car.name}</h4>
+          <p>${car.price}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Fungsi untuk render mobil yang dipilih
+    function renderSelectedCars() {
+      const container = document.getElementById("selectedCarsList");
+      container.innerHTML = "";
+
+      if (selectedCars.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h4>Belum ada mobil yang dipilih</h4><p>Pilih mobil dari menu "Lihat Mobil"</p></div>';
+        return;
+      }
+
+      selectedCars.forEach(car => {
+        const card = document.createElement("div");
+        card.className = "car-card";
+        card.innerHTML = `
+          <div class="status-badge status-selected">DIPILIH</div>
+          <img src="${car.image}" alt="${car.name}">
+          <h4>${car.name}</h4>
+          <p>${car.price}</p>
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button onclick="showDetails(${car.id})" style="flex: 1; background: #667eea; color: white; border: none; padding: 0.5rem; border-radius: 5px; cursor: pointer;">Sewa</button>
+            <button onclick="removeFromSelected(${car.id})" style="background: #f44336; color: white; border: none; padding: 0.5rem; border-radius: 5px; cursor: pointer;">Hapus</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Fungsi untuk render mobil yang disewa aktif
+    function renderActiveRentals() {
+      const container = document.getElementById("activeRentalsList");
+      container.innerHTML = "";
+
+      if (activeRentals.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h4>Tidak ada mobil yang sedang disewa</h4><p>Mulai sewa mobil dari menu "Lihat Mobil"</p></div>';
+        return;
+      }
+
+      activeRentals.forEach(rental => {
+        const card = document.createElement("div");
+        card.className = "rented-car-card";
+        const endDate = new Date(rental.startDate);
+        endDate.setDate(endDate.getDate() + rental.days);
+        
+        card.innerHTML = `
+          <img src="${rental.car.image}" alt="${rental.car.name}">
+          <h4>${rental.car.name}</h4>
+          <p>${rental.car.price}</p>
+          <div style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+            <p><strong>Mulai:</strong> ${rental.startDate.toLocaleDateString('id-ID')}</p>
+            <p><strong>Selesai:</strong> ${endDate.toLocaleDateString('id-ID')}</p>
+            <p><strong>Total:</strong> ${rental.total}</p>
+          </div>
+          <button onclick="returnCar(${rental.id})" style="width: 100%; margin-top: 1rem; background: #4CAF50; color: white; border: none; padding: 0.7rem; border-radius: 8px; cursor: pointer;">Selesai Sewa</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Fungsi untuk render aktivitas terbaru di dashboard
+    function renderRecentActivity() {
+      const container = document.getElementById("recentActivity");
+      container.innerHTML = "";
+
+      const recentItems = [...selectedCars, ...activeRentals].slice(-3);
+
+      if (recentItems.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h4>Belum ada aktivitas</h4><p>Mulai pilih atau sewa mobil</p></div>';
+        return;
+      }
+
+      recentItems.forEach(item => {
+        const isRental = item.car; // activeRentals punya property car
+        const car = isRental ? item.car : item;
+        const card = document.createElement("div");
+        card.className = "rented-car-card";
+        
+        card.innerHTML = `
+          <div class="status-badge" style="background: ${isRental ? '#4CAF50' : '#FF9800'}">
+            ${isRental ? 'DISEWA' : 'DIPILIH'}
+          </div>
+          <img src="${car.image}" alt="${car.name}">
+          <h4>${car.name}</h4>
+          <p>${car.price}</p>
+          ${isRental ? `<p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">Total: ${item.total}</p>` : ''}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Fungsi untuk render riwayat penyewaan
+    function renderHistory() {
+      const table = document.getElementById("historyTableBody");
+      table.innerHTML = "";
+
+      if (rentalHistory.length === 0) {
+        table.innerHTML = "<tr><td colspan='5'>Belum ada penyewaan.</td></tr>";
+        return;
+      }
+
+      rentalHistory.forEach(item => {
+        const row = document.createElement("tr");
+        const isActive = activeRentals.find(rental => rental.id === item.id);
+        
+        row.innerHTML = `
+          <td>${item.car.name}</td>
+          <td>${item.rentedAt}</td>
+          <td>${item.days} hari</td>
+          <td>${item.total}</td>
+          <td>
+            <span style="padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; color: white; background: ${isActive ? '#4CAF50' : '#666'};">
+              ${isActive ? 'AKTIF' : 'SELESAI'}
+            </span>
+          </td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    // Fungsi untuk filter riwayat
+    function filterHistory() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const table = document.getElementById("historyTableBody");
+      table.innerHTML = "";
+
+      const filtered = rentalHistory.filter(item => 
+        item.car.name.toLowerCase().includes(keyword)
+      );
+
+      if (filtered.length === 0) {
+        table.innerHTML = "<tr><td colspan='5'>Tidak ada hasil ditemukan.</td></tr>";
+        return;
+      }
+
+      filtered.forEach(item => {
+        const row = document.createElement("tr");
+        const isActive = activeRentals.find(rental => rental.id === item.id);
+        
+        row.innerHTML = `
+          <td>${item.car.name}</td>
+          <td>${item.rentedAt}</td>
+          <td>${item.days} hari</td>
+          <td>${item.total}</td>
+          <td>
+            <span style="padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; color: white; background: ${isActive ? '#4CAF50' : '#666'};">
+              ${isActive ? 'AKTIF' : 'SELESAI'}
+            </span>
+          </td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    // Fungsi untuk menghapus semua riwayat
+    function clearHistory() {
+      if (confirm("Yakin ingin menghapus semua riwayat?")) {
+        rentalHistory = [];
+        renderHistory();
+        updateDashboard();
+        showNotification("Riwayat berhasil dihapus!");
+      }
+    }
+
+    // Fungsi untuk mencari mobil
+    function searchCars() {
+      const keyword = document.getElementById("carSearchInput").value.toLowerCase();
+      const filtered = cars.filter(car => 
+        car.name.toLowerCase().includes(keyword)
+      );
+      renderAvailableCars(filtered);
+    }
+
+    // Fungsi untuk update dashboard statistics
+    function updateDashboard() {
+      document.getElementById("selectedCount").textContent = selectedCars.length;
+      document.getElementById("rentedCount").textContent = activeRentals.length;
+      document.getElementById("totalRentals").textContent = rentalHistory.length;
+    }
+
+    // Fungsi untuk menampilkan section
+    function showSection(sectionId) {
+      // Hide semua section
+      document.querySelectorAll(".section").forEach(sec => {
+        sec.classList.remove("active");
+      });
+
+      // Remove active class dari semua nav button
+      document.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      // Show section yang dipilih
+      document.getElementById(sectionId).classList.add("active");
+      
+      // Add active class ke nav button yang dipilih
+      event.target.classList.add("active");
+
+      // Render content sesuai section
+      switch(sectionId) {
+        case "home":
+          updateDashboard();
+          renderRecentActivity();
+          break;
+        case "cars":
+          renderAvailableCars();
+          break;
+        case "selected":
+          renderSelectedCars();
+          break;
+        case "rented":
+          renderActiveRentals();
+          break;
+        case "history":
+          renderHistory();
+          break;
+      }
+    }
+
+    // Fungsi logout
+function logout() {
+  if (confirm("Yakin ingin keluar?")) {
+    // Hapus komentar dan arahkan ke halaman login.html
+    // Tidak perlu reset variabel atau menampilkan notifikasi karena halaman akan segera dialihkan.
+    window.location.href = "login.html";
+  }
+}
+
+    // Event listener untuk modal (klik di luar modal untuk menutup)
+    window.onclick = function(event) {
+      const carModal = document.getElementById("carModal");
+      const receiptModal = document.getElementById("receiptModal");
+      
+      if (event.target === carModal) {
+        closeModal();
+      }
+      if (event.target === receiptModal) {
+        closeReceipt();
+      }
+    }
+
+    // Inisialisasi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+      updateDashboard();
+      renderRecentActivity();
+      renderAvailableCars();
+      
+      // Set default active nav button
+      document.querySelector('.nav-btn').classList.add('active');
+      
+      // Simulasi data awal untuk demo
+      setTimeout(() => {
+        // Tambah beberapa data demo
+        selectedCars.push(
+          { ...cars[0], selectedAt: new Date() },
+          { ...cars[2], selectedAt: new Date() }
+        );
+        
+        // Simulasi satu rental aktif
+        const demoRental = {
+          id: Date.now(),
+          car: { ...cars[1] },
+          startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 hari yang lalu
+          days: 5,
+          total: "Rp1.250.000",
+          status: 'active'
+        };
+        
+        activeRentals.push(demoRental);
+        rentalHistory.push({
+          ...demoRental,
+          rentedAt: demoRental.startDate.toLocaleString('id-ID')
+        });
+        
+        updateDashboard();
+        renderRecentActivity();
+        
+        showNotification("Selamat datang! Data demo telah dimuat.");
+      }, 1000);
+    });
+  </script>
+</body>
+
+</html>
