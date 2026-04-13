@@ -19,8 +19,10 @@ Aplikasi web untuk menyewa mobil dengan fitur login, dashboard, dan transaksi pe
 
 ## 🖼️ Screenshot
 
-(Tambahkan gambar di sini)
+<img width="1877" height="1008" alt="image" src="https://github.com/user-attachments/assets/d26e62a6-fea9-4f72-a75f-e3af12ed43c1" />
+
 
 ## 🚀 Demo
 
-(Link GitHub Pages / Netlify)
+open with live server
+
